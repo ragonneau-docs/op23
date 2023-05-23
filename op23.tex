@@ -4,9 +4,9 @@
 ]{talk}
 
 % Headings
-\title{Some perspectives on SQP}
-% \subtitle{}
-\date{OP23, Seattle, WA, USA (June 3, 2023)}
+\title{Some perspectives on \glsfmtshort{sqp}}
+\subtitle{A new manifold interpretation}
+\date{OP23 (June 3, 2023)}
 \author{\href{https://www.tomragonneau.com}{\textbf{Tom M. Ragonneau}} \and \href{https://www.zhangzk.net}{Zaikun Zhang}}
 \institute{
     Department of Applied Mathematics\\
@@ -15,13 +15,28 @@
 }
 \titlegraphic{}
 \hypersetup{
-    pdfsubject={Presentation at OP23},
+    pdfsubject={OP23},
     pdfkeywords={},
 }
 
 \begin{document}
 
 \maketitle
+
+\begin{frame}{What about COBYQA?}
+    \begin{block}{What is COBYQA?}
+        \begin{itemize}
+            \item To do.
+            \item Already introduced at \alert{CSE23}.
+            \item For details, see my \alert{PhD thesis}~\cite{Ragonneau_2022}.
+        \end{itemize}
+    \end{block}
+
+    \begin{center}
+        \qrcode{https://www.cobyqa.com}\\[1ex]
+        \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
+    \end{center}
+\end{frame}
 
 \begin{frame}{Table of contents}
     \tableofcontents[hideallsubsections]
@@ -30,7 +45,7 @@
 \appendix
 \ifnum\value{cite}>0
     \begin{frame}[t,allowframebreaks]{References}
-        \bibliographystyle{plain}
+        \bibliographystyle{apalike}
         \bibliography{\bibfile}
     \end{frame}
 \fi

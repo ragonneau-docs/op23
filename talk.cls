@@ -12,9 +12,8 @@
 \ProcessOptions\relax
 \LoadClass[10pt,xcolor=dvipsnames]{beamer}
 
-% Manage culturally-determined typographical rules
-\RequirePackage[american]{babel}
-\RequirePackage{csquotes}
+% Encoding
+\RequirePackage[T1]{fontenc}
 
 % Set theme and templates
 \usetheme{metropolis}
@@ -28,29 +27,7 @@
 \usefonttheme{professionalfonts}
 \setbeamerfont{standout}{size=\normalsize}
 
-% Change theme colors
-\definecolor{VeniceBlue}{HTML}{2F5675}
-\definecolor{Caramel}{HTML}{C68E17}
-\definecolor{FernGreen}{HTML}{4F7942}
-\setbeamercolor{normal text}{fg=VeniceBlue!70!black,bg=black!2}
-\setbeamercolor{alerted text}{fg=Caramel}
-\setbeamercolor{example text}{fg=FernGreen!95!black}
-
-% Patch `Overfull \vbox (... too high)' in title page
-\RequirePackage{tikz}
-\usetikzlibrary{positioning}
-\def\titlepage{\usebeamertemplate{title page}}
-\setbeamertemplate{title graphic}{
-    \begin{tikzpicture}[overlay,remember picture]
-        \node[below left=2em and \beamer@rightmargin of current page.north east] {\inserttitlegraphic};
-    \end{tikzpicture}
-}
-
-% Patch `Token not allowed in a PDF string (Unicode)' in appendix
-\pdfstringdefDisableCommands{\def\translate#1{#1}}
-
-% Font and encoding
-\RequirePackage[T1]{fontenc}
+% Fonts
 \setsansfont{FiraSans}[
     Path=fonts/fira-sans/,
     Extension=.otf,
@@ -66,6 +43,34 @@
     BoldFont=*-Bold,
 ]
 
+% Manage culturally-determined typographical rules
+\RequirePackage[american]{babel}
+\RequirePackage{csquotes}
+
+% Change theme colors
+\definecolor{VeniceBlue}{HTML}{2F5675}
+\definecolor{Caramel}{HTML}{C68E17}
+\definecolor{FernGreen}{HTML}{4F7942}
+\setbeamercolor{normal text}{fg=VeniceBlue!70!black,bg=black!2}
+\setbeamercolor{alerted text}{fg=Caramel}
+\setbeamercolor{example text}{fg=FernGreen!95!black}
+
+% Plots
+\RequirePackage{tikz}
+\RequirePackage{pgfplots}
+\RequirePackage{pgfplotstable}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{positioning}
+\usepgfplotslibrary{}
+
+% Patch `Overfull \vbox (... too high)' in title page
+\def\titlepage{\usebeamertemplate{title page}}
+\setbeamertemplate{title graphic}{
+    \begin{tikzpicture}[overlay,remember picture]
+        \node[below left=2em and \beamer@rightmargin of current page.north east] {\inserttitlegraphic};
+    \end{tikzpicture}
+}
+
 % Subliminal refinements
 \RequirePackage{microtype}
 
@@ -78,17 +83,9 @@
     text margin right=0.75\beamer@rightmargin,
 }
 
-% Plots
-\RequirePackage{tikz}
-\RequirePackage{pgfplots}
-\RequirePackage{pgfplotstable}
-\pgfplotsset{compat=1.18}
-\usetikzlibrary{}
-\usepgfplotslibrary{}
-
 % Bibliography
 % N.B.: the counter `cite' is used to count the number of citations.
-\newcommand{\bibfile}{bib/refs}
+\newcommand*{\bibfile}{bib/refs}
 \newcounter{cite}
 \pretocmd{\cite}{\stepcounter{cite}}{}{}
 
@@ -141,7 +138,6 @@
 \if@license
     \AtEndDocument{
         \begin{frame}[standout]
-
             This presentation is licensed under a \doclicenseLongNameRef.
             \begin{center}
                 \upshape\doclicenseImage[imagewidth=0.3\textwidth]
@@ -185,12 +181,12 @@
 \DeclareMathOperator{\vol}{vol}
 \DeclareMathOperator{\vspan}{span}
 % Sets
-\newcommand{\C}{\mathbb{C}}
-\newcommand{\F}{\mathbb{F}}
-\newcommand{\N}{\mathbb{N}}
-\newcommand{\Q}{\mathbb{Q}}
-\newcommand{\R}{\mathbb{R}}
-\newcommand{\Z}{\mathbb{Z}}
+\newcommand*{\C}{\mathbb{C}}
+\newcommand*{\F}{\mathbb{F}}
+\newcommand*{\N}{\mathbb{N}}
+\newcommand*{\Q}{\mathbb{Q}}
+\newcommand*{\R}{\mathbb{R}}
+\newcommand*{\Z}{\mathbb{Z}}
 % Notations
 \newcommand*{\du}{\mathrm{d}}
 \newcommand*{\eu}{\mathrm{e}}
