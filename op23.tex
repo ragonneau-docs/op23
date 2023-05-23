@@ -1,0 +1,38 @@
+%% Copyright (c) 2023, Tom M. Ragonneau
+\documentclass[
+    % nolicense,  % Whether to include the license frame
+]{talk}
+
+% Headings
+\title{Some perspectives on SQP}
+% \subtitle{}
+\date{OP23, Seattle, WA, USA (June 3, 2023)}
+\author{\href{https://www.tomragonneau.com}{\textbf{Tom M. Ragonneau}} \and \href{https://www.zhangzk.net}{Zaikun Zhang}}
+\institute{
+    Department of Applied Mathematics\\
+    The Hong Kong Polytechnic University\\
+    Hung Hom, Kowloon, Hong Kong
+}
+\titlegraphic{}
+\hypersetup{
+    pdfsubject={Presentation at OP23},
+    pdfkeywords={},
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Table of contents}
+    \tableofcontents[hideallsubsections]
+\end{frame}
+
+\appendix
+\ifnum\value{cite}>0
+    \begin{frame}[t,allowframebreaks]{References}
+        \bibliographystyle{plain}
+        \bibliography{\bibfile}
+    \end{frame}
+\fi
+
+\end{document}
