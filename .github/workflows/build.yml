@@ -30,7 +30,7 @@ jobs:
           pre_compile: tlmgr update --self && tlmgr update --all
 
       - name: Rename the PDF document
-        run: bash .github/tools/rename.sh
+        run: bash .github/actions/build/rename.sh
 
       - name: Store artifacts
         uses: actions/upload-artifact@v3
