@@ -26,6 +26,7 @@
 
 # latex
 \\(?:n(?:ew|ormal|osub)|r(?:enew)|t(?:able(?:of|)|he|itle))(?=[a-z]+)
+\\[A-Za-z]+
 
 # https/http/file urls
 (?:\b(?:https?|ftp|file)://)[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]
