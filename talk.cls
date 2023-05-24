@@ -49,10 +49,10 @@
 
 % Change theme colors
 \definecolor{VeniceBlue}{HTML}{2F5675}
-\definecolor{Caramel}{HTML}{C68E17}
+\definecolor{DarkCaramel}{HTML}{B27A03}
 \definecolor{FernGreen}{HTML}{4F7942}
 \setbeamercolor{normal text}{fg=VeniceBlue!70!black,bg=black!2}
-\setbeamercolor{alerted text}{fg=Caramel}
+\setbeamercolor{alerted text}{fg=DarkCaramel}
 \setbeamercolor{example text}{fg=FernGreen!95!black}
 
 % Plots
@@ -158,11 +158,11 @@
 \mathcode`@="8000{\catcode`\@=\active\gdef@{\mkern1mu}}
 
 % Mathematics
-% Mathematics
 \RequirePackage{mathtools}
 \RequirePackage{amssymb}
 \RequirePackage{cases}
 \RequirePackage{empheq}
+\usepackage[bb=dsfontserif]{mathalpha}
 % Operators
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -200,40 +200,6 @@
 \newcommand*{\inner}[2][]{#1\langle#2#1\rangle}
 \newcommand*{\norm}[2][]{#1\lVert#2#1\rVert}
 \newcommand*{\set}[2][]{#1\{#2#1\}}
-
-% Glossaries
-\usepackage[acronym]{glossaries-extra}
-\setabbreviationstyle[acronym]{long-short}
-\glsdisablehyper
-\newacronym{acq}{ACQ}{Abadie constraint qualification}
-\newacronym{auc}{AUC}{area under the \glsfmtshort{roc} curve}
-\newacronym{bbo}{BBO}{black-box optimization}
-\newacronym{cdt}{CDT}{Celis-Dennis-Tapia}
-\newacronym{cpld}{CPLD}{constant positive linear dependence constraint qualification}
-\newacronym{cpu}{CPU}{central processing unit}
-\newacronym{crcq}{CRCQ}{constant rank constraint qualification}
-\newacronym{dfo}{DFO}{derivative-free optimization}
-\newacronym{dfp}{DFP}{Davidon-Fletcher-Powell}
-\newacronym{gcq}{GCQ}{Guignard constraint qualification}
-\newacronym{gps}{GPS}{generalized pattern search}
-\newacronym{kkt}{KKT}{Karush-Kuhn-Tucker}
-\newacronym{lcq}{LCQ}{linearity constraint qualification}
-\newacronym{licq}{LICQ}{linear independence constraint qualification}
-\newacronym{mads}{MADS}{mesh adaptive direct search}
-\newacronym{mdo}{MDO}{multi-disciplinary design optimization}
-\newacronym{mfcq}{MFCQ}{Mangasarian-Fromovitz constraint qualification}
-\newacronym{psb}{PSB}{Powell symmetric Broyden}
-\newacronym{qncq}{QNCQ}{quasi-normality constraint qualification}
-\newacronym{rbf}{RBF}{radial basis function}
-\newacronym{roc}{ROC}{receiver operating characteristic}
-\newacronym{sc}{SC}{Slater's condition}
-\newacronym{slqp}{SLQP}{sequential linear-quadratic programming}
-\newacronym{soc}{SOC}{second-order correction}
-\newacronym{sqp}{SQP}{sequential quadratic programming}
-\newacronym{sqm}{SQM}{sequence of quadratic models}
-\newacronym{svc}{SVC}{support vector classification}
-\newacronym{svm}{SVM}{support vector machine}
-\newacronym{tcg}{TCG}{truncated conjugate gradient}
 
 % QR codes
 \ifdraft{\PassOptionsToPackage{draft}{qrcode}}{}
