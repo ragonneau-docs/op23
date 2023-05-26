@@ -1,3 +1,4 @@
+
 [submodule "bib"]
 	path = bib
-	url = https://github.com/ragonneau-talks/bib
+	url = https://github.com/ragonneau/bib.git
