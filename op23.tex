@@ -4,18 +4,22 @@
 ]{talk}
 
 \newcommand*{\ceq}{h}
+\newcommand*{\ceqm}[1][]{\hat{\ceq}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\cub}{g}
+\newcommand*{\cubm}[1][]{\hat{\cub}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\iter}[1][]{x\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lag}{\mathcal{L}}
-\newcommand*{\lm}[1][]{\lambda\ifblank{#1}{}{_{#1}}}
+\newcommand*{\lagm}[1][]{\hat{\lag}\ifblank{#1}{}{_{#1}}}
+\newcommand*{\lmeq}[1][]{\mu\ifblank{#1}{}{_{#1}}}
+\newcommand*{\lmub}[1][]{\lambda\ifblank{#1}{}{_{#1}}}
 \newcommand*{\obj}{f}
+\newcommand*{\objm}[1][]{\hat{\obj}\ifblank{#1}{}{_{#1}}}
+\newcommand*{\rad}[1][]{\Delta\ifblank{#1}{}{_{#1}}}
 \newcommand*{\step}[1][]{s\ifblank{#1}{}{_{#1}}}
 \newcommand*{\xl}{l}
 \newcommand*{\xu}{u}
 
 % Headings
-% \title{Some perspectives on \glsfmtshort{sqp}}
-% \subtitle{A new manifold interpretation}
 \title{COBYQA}
 \subtitle{A derivative-free trust-region SQP method for nonlinearly constrained optimization}
 \date{OP23 (June 3, 2023)}
@@ -36,7 +40,7 @@
 \maketitle
 
 \begin{frame}{General context}
-    We designed a method named COBYQA for solving
+    We design a method named COBYQA for solving
     \begin{equation*}
         \min_{\iter \in \R^n} \quad \obj(\iter) \quad \text{s.t.} \quad
         \begin{cases}
@@ -45,45 +49,15 @@
             \xl \le \iter \le \xu,
         \end{cases}
     \end{equation*}
-    where derivatives of~$\obj$,~$\cub$, and~$\ceq$ are \alert{unavailable}.
+    where derivatives of $\obj$, $\cub$, and $\ceq$ are \alert{unavailable}.
 
     \medskip
 
     \begin{block}{Notes on the method}
         \begin{itemize}
             \item COBYQA aims at being a \alert{successor} to COBYLA.
-            \item We \alert{implemented} COBYQA into a Python solver.
+            \item We \alert{implement} COBYQA into a Python solver.
             \item The bound constraints are assumed \alert{inviolable}.
-        \end{itemize}
-    \end{block}
-\end{frame}
-
-\begin{frame}{The method}
-    \begin{block}{How does it work?}
-        \begin{itemize}
-            \item COBYQA is a derivative-free trust-region \alert{SQP} method.
-            \item It builds \alert{models} of~$\obj$,~$\cub$, and~$\ceq$ by underdetermined interpolation.
-            \item Every point visited by COBYQA satisfied the \alert{bound} constraints.
-        \end{itemize}
-    \end{block}
-
-    \medskip
-
-    We implemented COBYQA in Python and made it \alert{publicly available}.
-
-    \begin{center}
-        \begin{center}
-            \qrcode{https://www.cobyqa.com}\\[1ex]
-            \href{https://www.cobyqa.com}{www.cobyqa.com}
-        \end{center}
-    \end{center}
-\end{frame}
-
-\begin{frame}{The focus of this talk}
-    \begin{block}{}
-        \begin{itemize}
-            \item We provide a new \alert{interpretation} of SQP.
-            \item We study some connections with \alert{manifold optimization}.
         \end{itemize}
     \end{block}
 \end{frame}
@@ -92,32 +66,70 @@
     \tableofcontents[hideallsubsections]
 \end{frame}
 
-\section{Brief review of SQP}
+% \begin{frame}{The method}
+%     \begin{block}{How does it work?}
+%         \begin{itemize}
+%             \item COBYQA is a derivative-free trust-region \alert{SQP} method.
+%             \item It builds \alert{models} of $\obj$, $\cub$, and $\ceq$ by underdetermined interpolation.
+%             \item Every point visited by COBYQA satisfied the \alert{bound} constraints.
+%         \end{itemize}
+%     \end{block}
 
-\begin{frame}{To do.}
-    In this talk, we consider the problem
-    \begin{equation*}
-        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \text{s.t.} \quad \ceq(\iter) = 0.
-    \end{equation*}
-    Given an iterate~$\iter[k]$, SQP sets~$\step[k]$ to a solution to
-    \begin{equation*}
-        \begin{aligned}
-            \min_{\step \in \R^n}   & \quad \obj(\iter[k]) + \step^{\T} \nabla \obj(\iter[k]) + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter}^2 \lag(\iter[k], \lm[k]) \step\\
-            \text{s.t.}             & \quad \ceq(\iter[k]) + \nabla \ceq(\iter[k]) \step = 0,
-        \end{aligned}
-    \end{equation*}
-    for some Lagrange multiplier~$\lm[k]$, and updates~$\iter[k + 1] = \iter[k] + \step[k]$.
+%     \medskip
+
+%     We implemented COBYQA in Python and made it \alert{publicly available}.
+
+%     \begin{center}
+%         \begin{center}
+%             \qrcode{https://www.cobyqa.com}\\[1ex]
+%             \href{https://www.cobyqa.com}{www.cobyqa.com}
+%         \end{center}
+%     \end{center}
+% \end{frame}
+
+% \begin{frame}{The focus of this talk}
+%     \begin{block}{}
+%         \begin{itemize}
+%             \item We provide a new \alert{interpretation} of SQP.
+%             \item We study some connections with \alert{manifold optimization}.
+%         \end{itemize}
+%     \end{block}
+% \end{frame}
+
+\section{General framework of COBYQA}
+
+\begin{frame}{The derivative-free trust-region SQP method}
+
+    COBYQA iteratively solves the trust-region SQP subproblem
+    \begin{align*}
+        \min_{\step \in \R^n}   & \quad \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter} ^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
+        \textrm{s.t.}           & \quad \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) + \nabla \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) \step \le 0,\\
+                                & \quad \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) + \nabla \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) \step = 0,\\
+                                & \quad \xl \le \iter[k] + \step \le \xu,\\
+                                & \quad \norm{\step} \le \rad[k],
+    \end{align*}
+    with $\only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter, \lmub,
+    \lmeq) = \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
+
+    \medskip
+    \pause
+
+    \begin{block}{Remarks on this subproblem}
+        \begin{itemize}
+            \item We only require an approximate solution $\step[k]$.
+            \item The solution must satisfy $\xl \le \iter[k] + \step[k] \le \xu$.
+            \item It is \alert{wrong} to replace $\nabla_{\iter, \iter} ^2 \lagm[k](\iter[k], \lmub[k], \lmeq[k])$ with $\nabla^2 \obj(\iter[k])$.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
-\section{A new interpretation of SQP}
-
-\begin{frame}{To do.}
+\begin{frame}{The derivative-free trust-region SQP method (cont')}
+    COBYQA builds its models by quadratic underdetermined interpolation.
 \end{frame}
 
-\section{SQP and manifold optimization}
+\section{A new interpretation of the subproblem}
 
-\begin{frame}{To do.}
-\end{frame}
+\section{Implementation and experiments}
 
 \section{Conclusion}
 
