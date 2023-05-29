@@ -85,9 +85,16 @@
 
 % Bibliography
 % N.B.: the counter `cite' is used to count the number of citations.
-\newcommand*{\bibfile}{bib/refs}
-\newcounter{cite}
-\pretocmd{\cite}{\stepcounter{cite}}{}{}
+\RequirePackage[
+    style=ext-authoryear-comp,
+    articlein=false,
+    sortcites=false,
+    maxcitenames=3,
+]{biblatex}
+\setbeamertemplate{bibliography item}[triangle]
+\DeclareNameAlias{author}{family-given}
+\setlength{\bibitemsep}{\itemsep}
+\renewcommand*{\bibfont}{\scriptsize}
 
 % Customize blocks, alert blocks, and example blocks
 \renewcommand{\metropolis@block}[1]{

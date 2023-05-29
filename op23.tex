@@ -3,20 +3,26 @@
     % nolicense,  % Whether to include the license frame
 ]{talk}
 
+% Bibliography
+\addbibresource{bib/refs.bib}
+
+% Macros dedicated to this presentation
 \newcommand*{\ceq}{h}
 \newcommand*{\ceqm}[1][]{\hat{\ceq}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\cub}{g}
 \newcommand*{\cubm}[1][]{\hat{\cub}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\iter}[1][]{x\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lag}{\mathcal{L}}
-\newcommand*{\lagm}[1][]{\hat{\lag}\ifblank{#1}{}{_{#1}}}
+\newcommand*{\lagm}[1][]{\widehat{\lag}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lmeq}[1][]{\mu\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lmub}[1][]{\lambda\ifblank{#1}{}{_{#1}}}
 \newcommand*{\obj}{f}
 \newcommand*{\objm}[1][]{\hat{\obj}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\rad}[1][]{\Delta\ifblank{#1}{}{_{#1}}}
+\newcommand*{\radlb}[1][]{\delta\ifblank{#1}{}{_{#1}}}
 \newcommand*{\step}[1][]{s\ifblank{#1}{}{_{#1}}}
 \newcommand*{\xl}{l}
+\newcommand*{\xpt}[1][]{\mathcal{Y}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\xu}{u}
 
 % Headings
@@ -42,7 +48,7 @@
 \begin{frame}{General context}
     We design a method named COBYQA for solving
     \begin{equation*}
-        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \text{s.t.} \quad
+        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \textrm{s.t.} \quad
         \begin{cases}
             \cub(\iter) \le 0,\\
             \ceq(\iter) = 0,\\
@@ -102,14 +108,14 @@
 
     COBYQA iteratively solves the trust-region SQP subproblem
     \begin{align*}
-        \min_{\step \in \R^n}   & \quad \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter} ^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
+        \min_{\step \in \R^n}   & \quad \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k]) + \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter} ^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
         \textrm{s.t.}           & \quad \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) + \nabla \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) \step \le 0,\\
                                 & \quad \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) + \nabla \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) \step = 0,\\
                                 & \quad \xl \le \iter[k] + \step \le \xu,\\
                                 & \quad \norm{\step} \le \rad[k],
     \end{align*}
     with $\only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter, \lmub,
-    \lmeq) = \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
+    \lmeq) \coloneqq \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
 
     \medskip
     \pause
@@ -123,11 +129,144 @@
     \end{block}
 \end{frame}
 
-\begin{frame}{The derivative-free trust-region SQP method (cont')}
-    COBYQA builds its models by quadratic underdetermined interpolation.
+\begin{frame}{Interpolation-based quadratic models}
+    COBYQA models $\obj$, $\cub$, and $\ceq$ by \alert{quadratic} interpolation, as follows.\footnote{Some other methods: \cite{Conn_Scheinberg_Toint_1997a,Conn_Scheinberg_Toint_1997b,Conn_Scheinberg_Toint_1998,Wild_2008,Bandeira_Scheinberg_Vicente_2012,Zhang_2014,Xie_Yuan_2023}.}
+
+    \begin{block}{Derivative-free symmetric Broyden update \parencite{Powell_2004}}
+        The $k$th quadratic model $\objm[k]$ of $\obj$ solves
+        \begin{equation*}
+            \begin{aligned}
+                \min_{Q \in \mathcal{Q}_n}  & \quad \norm[\big]{\nabla^2 Q - \nabla^2 \objm[k - 1]}_{\mathsf{F}}\\
+                \textrm{s.t.}               & \quad Q(y) = \obj(y), ~ y \in \xpt[k],
+            \end{aligned}
+        \end{equation*}
+        for some $\xpt[k] \subseteq \R^n$, with $\objm[-1] \coloneqq 0$ (similar for $\cubm[k]$ and $\ceqm[k]$).
+    \end{block}
+
+    The interpolation set $\xpt[k]$ is \alert{recycled} at each iteration.
+    \begin{itemize}
+        \item The set $\xpt[k + 1]$ is built as $(\xpt[k] \setminus \bar{y}) \cup \set{\iter[k] + \step[k]}$ for some $\bar{y} \in \xpt[k]$.
+        \item The KKT system of this variational problem is \alert{linear}.
+    \end{itemize}
 \end{frame}
 
-\section{A new interpretation of the subproblem}
+\begin{frame}{Management of the trust-region radius}
+    \begin{block}{We maintain $\rad[k]$ and a lower bound $\radlb[k] \le \rad[k]$}
+        \begin{itemize}
+            \item The lower bound $\radlb[k]$ is \alert{never} increased.
+            \item We update $\rad[k]$ in the usual way, but we \alert{always} have $\rad[k] \ge \radlb[k]$.
+            \item This strategy is adapted from Powell's methods.
+        \end{itemize}
+    \end{block}
+
+    \medskip
+
+    The value of $\radlb[k]$ is an indicator of the current \alert{resolution}.
+
+    \begin{itemize}
+        \item Without $\rad[k] \ge \radlb[k]$, the value of $\rad[k]$ may become too small.
+        \item It prevents the interpolation points from \alert{concentrating} too much.
+        \item The value of $\radlb[k]$ is only \alert{decreased} when necessary.
+        \item Hence, stopping when $\radlb[k] \le \radlb[\textrm{end}]$ is \alert{reasonnable} ($\radlb[\textrm{end}] > 0$).
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{There remain many difficulties to address}
+    \begin{itemize}
+        \item What if the trust-region subproblem is \alert{infeasible}?\\
+        \textcolor{FernGreen}{COBYQA uses a Byrd-Omojokun composite-step approach.}
+        \item How to calculate the trial step $\step[k]$ \alert{numerically}?\\
+        \textcolor{FernGreen}{We adapt the truncated conjugate gradient method.}
+        \item What are the approximate Lagrange multipliers $\lmub[k]$ and $\lmeq[k]$?\\
+        \textcolor{FernGreen}{We choose the least-squares Lagrange multipliers.}
+        \item How to define a trust-region ratio? Using what merit function?\\
+        \textcolor{FernGreen}{COBYQA uses the $\ell_2$-merit function.}
+        \item What if the set $\xpt[k]$ is (almost) nonpoised?\\
+        \textcolor{FernGreen}{We use a geometry-improving mechanism.}
+    \end{itemize}
+
+    \medskip
+
+    These questions (and more) are addressed in \cite{Ragonneau_2022}.
+\end{frame}
+
+\section{A new interpretation of the SQP subproblem}
+
+\begin{frame}{General settings}
+    For simplicity, we consider the \alert{smooth} problem
+    \begin{equation*}
+        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \textrm{s.t.} \quad \ceq(\iter) = 0.
+    \end{equation*}
+    If $(\bar{\iter}, \bar{\lmeq})$ is \alert{almost} a KKT pair, then
+    \begin{equation*}
+        \begin{cases}
+            \nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq}) \approx 0,\\
+            \ceq(\bar{\iter}) \approx 0,
+        \end{cases}
+    \end{equation*}
+    with $\lag(\iter, \lmeq) = \obj(\iter) + \lmeq^{\T} \ceq(\iter)$.
+
+    \medskip
+
+    \begin{block}{A curve of interest}
+        We consider a \alert{curve} parametrized by $\chi : \R \to \R^n$ with
+        \begin{equation*}
+            \ceq\big(\chi(\cdot)\big) = \ceq(\bar{\iter}) \quad \text{and} \quad \chi(0) = \bar{\iter}.
+        \end{equation*}
+        This is a curve on a \alert{level surface} of the constraints.
+    \end{block}
+\end{frame}
+
+\begin{frame}{The new interpretation}
+    Recall that the objective function of the SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
+    \begin{equation*}
+        Q(\step) \coloneqq \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \alert{\only<1,3>{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step.
+    \end{equation*}
+
+    \begin{block}{Main result \parencite[Theorem 4.1.1]{Ragonneau_2022}}
+        If $\obj$, $\ceq$, and $\chi$ have locally Lipschitz second-order derivatives, then
+        \begin{equation*}
+            \abs[\big]{\obj\big(\chi(t)\big) - Q\big(\chi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\chi''(0)^{\T} \alert{\only<1,3>{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
+        \end{equation*}
+        for some $\nu \ge 0$, $\epsilon > 0$, and all $t \in (-\epsilon, \epsilon)$.
+    \end{block}
+
+    \uncover<3>{
+        \smallskip
+
+        In other words, $Q$ is a \alert{natural approximation} of $\obj$ in $\ker \nabla \ceq(\bar{\iter})$, because
+        \begin{equation*}
+            \nabla \ceq(\bar{\iter}) \chi'(0) = 0.
+        \end{equation*}
+    }
+\end{frame}
+
+\begin{frame}{The new interpretation (cont'd)}
+    \begin{center}
+        \begin{tikzpicture}[rotate=301]
+            \draw[thick,VeniceBlue] plot[smooth,tension=1] coordinates {(0,2) (2,3) (3,6)};
+            \draw[thick,Mahogany] plot[smooth,tension=1] coordinates {(2,-0.5) (4,1) (6,4)};
+            \draw[thick,DarkCaramel] (0,1/3) -- (4.5,19/3);
+            \draw[thick,FernGreen] (1,-2/3) -- (6,18/3);
+            \draw[latex-latex] (1,5/3) -- (53/25,62/75);
+
+            \node at (2,3) {$\bullet$};
+
+            \node[above] at (2,3) {$\bar{\iter}$};
+            \node[right,yshift=-0.1cm] at (39/25,187/150) {$\norm[\big]{\nabla \ceq(\bar{\iter})^{\dagger} \ceq(\bar{\iter})}$};
+            \node[above,VeniceBlue,xshift=0.5cm] at (3,6) {$\ceq^{-1}(\bar{\iter})$};
+            \node[above,DarkCaramel,xshift=0.5cm,yshift=0.15cm] at (4.5,19/3) {$\bar{\iter} + \ker \nabla \ceq(\bar{\iter})$};
+            \node[above,FernGreen,xshift=-0.5cm,yshift=0.4cm] at (6,18/3) {$\bar{x} + \set{\step \in \R^n : \ceq(\bar{\iter}) + \nabla \ceq(\bar{\iter}) \step = 0}$};
+            \node[above,Mahogany,xshift=0.5cm] at (6,4) {$\ceq^{-1}(0)$};
+        \end{tikzpicture}
+    \end{center}
+
+    \begin{itemize}
+        \item The \textcolor{FernGreen}{green} line represents the feasible set of the SQP subproblem.
+        \item If $\ceq(\bar{\iter}) = 0$, the \textcolor{FernGreen}{green} and \textcolor{DarkCaramel}{yellow} lines overlap.
+        \item The \textcolor{FernGreen}{green} line is shifted towards feasibility.
+    \end{itemize}
+\end{frame}
 
 \section{Implementation and experiments}
 
@@ -138,11 +277,8 @@
 
 
 \appendix
-\ifnum\value{cite}>0
-    \begin{frame}[t,allowframebreaks]{References}
-        \bibliographystyle{apalike}
-        \bibliography{\bibfile}
-    \end{frame}
-\fi
+\begin{frame}[t,allowframebreaks]{References}
+    \printbibliography[heading=none]
+\end{frame}
 
 \end{document}
