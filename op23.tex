@@ -87,7 +87,7 @@
             \item The bound constraints are assumed \alert{inviolable}, as
             \begin{itemize}
                 \item they often represent \alert{inalienable} restrictions, and
-                \item the functions $\obj$, $\cub$, and $\ceq$ may not be defined otherwise.
+                \item the values $\obj(\iter)$, $\cub(\iter)$, and $\ceq(\iter)$ may not be defined if $\xl \not\le \iter$ or $\iter \not\le \xu$.
             \end{itemize}
         \end{itemize}
     \end{block}
@@ -104,15 +104,17 @@
     COBYQA iteratively solves the trust-region SQP subproblem
     \begin{align*}
         \min_{\step \in \R^n}   & \quad \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k]) + \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter} ^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
-        \textrm{s.t.}           & \quad \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) + \nabla \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) \step \le 0,\\
-                                & \quad \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) + \nabla \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) \step = 0,\\
-                                & \quad \xl \le \iter[k] + \step \le \xu,\\
-                                & \quad \norm{\step} \le \rad[k],
+        \textrm{s.t.}           & \quad \begin{cases}
+            \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) + \nabla \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) \step \le 0,\\
+            \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) + \nabla \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) \step = 0,\\
+            \xl \le \iter[k] + \step \le \xu,\\
+            \norm{\step} \le \rad[k],
+        \end{cases}
     \end{align*}
     with $\only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter, \lmub,
     \lmeq) = \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
 
-    \medskip
+    \smallskip
     \pause
 
     \begin{block}{Remarks on this subproblem}
@@ -192,7 +194,7 @@
 
 \begin{frame}{General settings}
     \begin{block}{}
-        \faIcon{exclamation-triangle} This part is \alert{not} DFO and focuses on SQP.
+        \centering\faIcon{exclamation-triangle} This part is \alert{not} DFO and focuses on SQP \faIcon{exclamation-triangle}
     \end{block}
 
     For simplicity, we consider the \alert{smooth} problem
@@ -216,13 +218,13 @@
 \begin{frame}{The new interpretation}
     Recall that the objective function of the SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
     \begin{equation*}
-        Q(\step) = \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step.
+        q(\step) = \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step.
     \end{equation*}
 
     \begin{alertblock}{Main result (Ragonneau and Zhang, 2022)}
         If $\obj$, $\ceq$, and $\xi$ have locally Lipschitz second-order derivatives, then
         \begin{equation*}
-            \abs[\big]{\obj\big(\xi(t)\big) - Q\big(\xi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\xi''(0)^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
+            \abs[\big]{\obj\big(\xi(t)\big) - q\big(\xi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\xi''(0)^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
         \end{equation*}
         for some $\nu \ge 0$, $\epsilon > 0$, and all $t \in (-\epsilon, \epsilon)$.
     \end{alertblock}
@@ -379,7 +381,7 @@
     We presented our new method COBYQA.
     \begin{itemize}
         \item It already received \alert{positive} feedback from practitioners.
-        \item It will soon be included in the Python packages PDFO and GEMSEO.
+        \item It will soon be included in the Python packages \href{https://www.pdfo.net}{PDFO} and \href{https://gemseo.readthedocs.io}{GEMSEO}.
     \end{itemize}
 
     We stated a new interpretation of the SQP subproblem.

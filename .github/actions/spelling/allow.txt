@@ -1,5 +1,6 @@
 Abadie
 acq
+alertblock
 allowframebreaks
 amssymb
 apalike
@@ -44,7 +45,9 @@ dvipsnames
 empheq
 endtext
 etoolbox
+exampleblock
 fira
+fontawesome
 frametitle
 Fromovitz
 gcq
