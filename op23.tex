@@ -2,6 +2,8 @@
 \documentclass[
     % nolicense,  % Whether to include the license frame
 ]{talk}
+\usepackage{array}
+\usepackage{fontawesome5}
 
 % Bibliography
 \addbibresource{bib/refs.bib}
@@ -51,7 +53,8 @@
 \institute{
     Department of Applied Mathematics\\
     The Hong Kong Polytechnic University\\
-    Hung Hom, Kowloon, Hong Kong
+    Hung Hom, Kowloon, Hong Kong\\[\baselineskip]
+    This work was supported by the \href{https://cerg1.ugc.edu.hk/hkpfs/index.html}{Hong Kong PhD Fellowship Scheme}.
 }
 \titlegraphic{}
 \hypersetup{
@@ -79,9 +82,13 @@
 
     \begin{block}{Notes on the method}
         \begin{itemize}
-            \item COBYQA aims at being a \alert{successor} to COBYLA.
+            \item COBYQA aims at being a \alert{successor} to \alert{COBYLA} \parencite{Powell_1994}.
             \item We \alert{implement} COBYQA into a Python solver.
-            \item The bound constraints are assumed \alert{inviolable}.
+            \item The bound constraints are assumed \alert{inviolable}, as
+            \begin{itemize}
+                \item they often represent \alert{inalienable} restrictions, and
+                \item the functions $\obj$, $\cub$, and $\ceq$ may not be defined otherwise.
+            \end{itemize}
         \end{itemize}
     \end{block}
 \end{frame}
@@ -103,7 +110,7 @@
                                 & \quad \norm{\step} \le \rad[k],
     \end{align*}
     with $\only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter, \lmub,
-    \lmeq) \coloneqq \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
+    \lmeq) = \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter) + \lmub^{\T} \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter) + \lmeq^{\T} \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter)$\only<2>{, given some \alert{models}}.
 
     \medskip
     \pause
@@ -112,15 +119,15 @@
         \begin{itemize}
             \item We only require an approximate solution $\step[k]$.
             \item The solution must satisfy $\xl \le \iter[k] + \step[k] \le \xu$.
-            \item It is \alert{wrong} to replace $\nabla_{\iter, \iter} ^2 \lagm[k](\iter[k], \lmub[k], \lmeq[k])$ with $\nabla^2 \obj(\iter[k])$.
+            \item It is \alert{wrong} to replace $\nabla_{\iter, \iter} ^2 \lagm[k](\iter[k], \lmub[k], \lmeq[k])$ with $\nabla^2 \objm[k](\iter[k])$.
         \end{itemize}
     \end{block}
 \end{frame}
 
 \begin{frame}{Interpolation-based quadratic models}
-    COBYQA models $\obj$, $\cub$, and $\ceq$ by \alert{quadratic} interpolation, as follows.\footnote{Some other methods: \cite{Conn_Scheinberg_Toint_1997a,Conn_Scheinberg_Toint_1997b,Conn_Scheinberg_Toint_1998,Wild_2008,Bandeira_Scheinberg_Vicente_2012,Zhang_2014,Xie_Yuan_2023}.}
+    COBYQA models $\obj$, $\cub$, and $\ceq$ by \alert{quadratic} interpolation, as follows.\footnote{Some alternatives: \textcite{Conn_Scheinberg_Toint_1997a,Conn_Scheinberg_Toint_1997b,Conn_Scheinberg_Toint_1998,Wild_2008,Bandeira_Scheinberg_Vicente_2012,Zhang_2014,Xie_Yuan_2023}.}
 
-    \begin{block}{Derivative-free symmetric Broyden update \parencite{Powell_2004}}
+    \begin{exampleblock}{Derivative-free symmetric Broyden update \parencite{Powell_2004}}
         The $k$th quadratic model $\objm[k]$ of $\obj$ solves
         \begin{equation*}
             \begin{aligned}
@@ -128,13 +135,13 @@
                 \textrm{s.t.}               & \quad Q(y) = \obj(y), ~ y \in \xpt[k],
             \end{aligned}
         \end{equation*}
-        for some $\xpt[k] \subseteq \R^n$, with $\objm[-1] \coloneqq 0$ (similar for $\cubm[k]$ and $\ceqm[k]$).
-    \end{block}
+        for some $\xpt[k] \subseteq \R^n$, with $\objm[-1] \equiv 0$ (similar for $\cubm[k]$ and $\ceqm[k]$).
+    \end{exampleblock}
 
     The interpolation set $\xpt[k]$ is \alert{recycled} at each iteration.
     \begin{itemize}
-        \item The set $\xpt[k + 1]$ is built as $(\xpt[k] \setminus \bar{y}) \cup \set{\iter[k] + \step[k]}$ for some $\bar{y} \in \xpt[k]$.
-        \item The KKT system of this variational problem is \alert{linear}.
+        \item We set $\xpt[k + 1] = \big(\xpt[k] \cup \set{\iter[k] + \step[k]}\big) \setminus \set{\bar{y}}$ for some bad point $\bar{y} \in \xpt[k]$.
+        \item This variational problem is a QP, with a \alert{linear} KKT system.
     \end{itemize}
 \end{frame}
 
@@ -143,11 +150,9 @@
         \begin{itemize}
             \item The lower bound $\radlb[k]$ is \alert{never} increased.
             \item We update $\rad[k]$ in the usual way, but we \alert{always} have $\rad[k] \ge \radlb[k]$.
-            \item This strategy is adapted from Powell's methods.
+            \item This strategy is adapted from \alert{Powell}'s methods (e.g., NEWUOA).
         \end{itemize}
     \end{block}
-
-    \medskip
 
     The value of $\radlb[k]$ is an indicator of the current \alert{resolution}.
 
@@ -157,10 +162,15 @@
         \item The value of $\radlb[k]$ is only \alert{decreased} when necessary.
         \item Hence, stopping when $\radlb[k] \le \radlb[\textrm{end}]$ is \alert{reasonable} ($\radlb[\textrm{end}] > 0$).
     \end{itemize}
+
+    \medskip
+
+    For more information, see \textcite[\S\ 5.2.5]{Ragonneau_2022}.
 \end{frame}
 
 \begin{frame}{There remain many difficulties to address}
     \begin{itemize}
+        \setlength\itemsep{0.5em}
         \item What if the trust-region subproblem is \alert{infeasible}?\\
         \textcolor{FernGreen}{COBYQA uses a Byrd-Omojokun composite-step approach.}
         \item How to calculate the trial step $\step[k]$ \alert{numerically}?\\
@@ -175,58 +185,55 @@
 
     \medskip
 
-    These questions (and more) are addressed in \cite{Ragonneau_2022}.
+    These questions (and more) are addressed in \textcite{Ragonneau_2022}.
 \end{frame}
 
 \section{A new interpretation of the SQP subproblem}
 
 \begin{frame}{General settings}
+    \begin{block}{}
+        \faIcon{exclamation-triangle} This part is \alert{not} DFO and focuses on SQP.
+    \end{block}
+
     For simplicity, we consider the \alert{smooth} problem
     \begin{equation*}
-        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \textrm{s.t.} \quad \ceq(\iter) = 0.
+        \min_{\iter \in \R^n} \quad \obj(\iter) \quad \textrm{s.t.} \quad \ceq(\iter) = 0,
     \end{equation*}
-    If $(\bar{\iter}, \bar{\lmeq})$ is \alert{almost} a KKT pair, then
+    and we denote by $\lag$ its Lagrangian, given by
     \begin{equation*}
-        \begin{cases}
-            \nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq}) \approx 0,\\
-            \ceq(\bar{\iter}) \approx 0,
-        \end{cases}
+        \lag(\iter, \lmeq) = \obj(\iter) + \lmeq^{\T} \ceq(\iter).
     \end{equation*}
-    with $\lag(\iter, \lmeq) = \obj(\iter) + \lmeq^{\T} \ceq(\iter)$.
 
-    \medskip
-
-    \begin{block}{A curve of interest}
-        We consider a \alert{curve} parametrized by $\chi : \R \to \R^n$ with
+    \begin{block}{A curve on the level surface of the constraints}
+        We consider a \alert{curve} parametrized by $\xi : \R \to \R^n$ with
         \begin{equation*}
-            \ceq\big(\chi(\cdot)\big) = \ceq(\bar{\iter}) \quad \text{and} \quad \chi(0) = \bar{\iter}.
+            \ceq\big(\xi(t)\big) = \ceq(\bar{\iter}) \quad \text{for all $t \in \R$} \quad \text{and} \quad \xi(0) = \bar{\iter}.
         \end{equation*}
-        This is a curve on a \alert{level surface} of the constraints.
+        Note that $\bar{\iter}$ can be \alert{infeasible}, i.e., $\ceq(\bar{\iter}) \neq 0$.
     \end{block}
 \end{frame}
 
 \begin{frame}{The new interpretation}
     Recall that the objective function of the SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
     \begin{equation*}
-        Q(\step) \coloneqq \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \alert{\only<1,3>{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step.
+        Q(\step) = \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step.
     \end{equation*}
 
-    \begin{block}{Main result \parencite[Theorem 4.1.1]{Ragonneau_2022}}
-        If $\obj$, $\ceq$, and $\chi$ have locally Lipschitz second-order derivatives, then
+    \begin{alertblock}{Main result (Ragonneau and Zhang, 2022)}
+        If $\obj$, $\ceq$, and $\xi$ have locally Lipschitz second-order derivatives, then
         \begin{equation*}
-            \abs[\big]{\obj\big(\chi(t)\big) - Q\big(\chi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\chi''(0)^{\T} \alert{\only<1,3>{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
+            \abs[\big]{\obj\big(\xi(t)\big) - Q\big(\xi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\xi''(0)^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
         \end{equation*}
         for some $\nu \ge 0$, $\epsilon > 0$, and all $t \in (-\epsilon, \epsilon)$.
-    \end{block}
+    \end{alertblock}
 
-    \uncover<3>{
-        \smallskip
+    \medskip
 
-        In other words, $Q$ is a \alert{natural approximation} of $\obj$ in $\ker \nabla \ceq(\bar{\iter})$, because
-        \begin{equation*}
-            \nabla \ceq(\bar{\iter}) \chi'(0) = 0.
-        \end{equation*}
-    }
+    \begin{itemize}
+        \item<3-> Note that if $(\bar{\iter}, \bar{\lmeq})$ is \alert{almost} a KKT pair, then $\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq}) \approx 0$.
+        \item<4> What does the line $\set{\xi'(0)t}_{t \in \R}$ represent?
+    \end{itemize}
+
 \end{frame}
 
 \begin{frame}{The new interpretation (cont'd)}
@@ -252,20 +259,23 @@
     \begin{itemize}
         \item The \textcolor{FernGreen}{green} line represents the feasible set of the SQP subproblem.
         \item If $\ceq(\bar{\iter}) = 0$, the \textcolor{FernGreen}{green} and \textcolor{DarkCaramel}{yellow} lines overlap.
-        \item The \textcolor{FernGreen}{green} line is shifted towards feasibility.
+        \item The \textcolor{FernGreen}{green} line is shifted towards feasibility, because
+        \begin{equation*}
+            \norm[\big]{\ceq(\bar{\iter} + \step)} = \mathcal{O}\big(\norm[\big]{\ceq(\bar{\iter})}^2\big)
+        \end{equation*}
     \end{itemize}
 \end{frame}
 
 \section{Implementation and experiments}
 
 \begin{frame}{The Python implementation of COBYQA}
-    \begin{block}{From \cite{Powell_2006}}
+    \begin{block}{From \textcite{Powell_2006}}
         \begin{quoting}
             \small%
             The development of NEWUOA has taken nearly \alert{three years}.
             The work was very \alert{frustrating} [\dots]
         \end{quoting}
-        The development of COBYQA was not easier.
+        The development of COBYQA was \alert{not easier}.
     \end{block}
 
     \smallskip
@@ -278,6 +288,10 @@
         \qrcode{https://www.cobyqa.com}\\[1ex]
         \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
     \end{center}
+
+    \begin{block}{}
+        \texttt{\$ pip install cobyqa}
+    \end{block}
 \end{frame}
 
 \begin{frame}{Comparing COBYQA with existing DFO solvers}
@@ -350,7 +364,7 @@
 \end{frame}
 
 \begin{frame}{Comparison with COBYLA}
-    We compare COBYQA and COBYLA on \alert{all} problems.
+    We compare COBYQA and COBYLA on \alert{all} 388 problems.
 
     \bigskip
 
@@ -365,11 +379,7 @@
     We presented our new method COBYQA.
     \begin{itemize}
         \item It already received \alert{positive} feedback from practitioners.
-        \item It will soon be included in
-        \begin{itemize}
-            \item PDFO as a successor for COBYLA, and
-            \item GEMSEO, an \alert{industrial} software package for MDO.
-        \end{itemize}
+        \item It will soon be included in the Python packages PDFO and GEMSEO.
     \end{itemize}
 
     We stated a new interpretation of the SQP subproblem.
@@ -382,6 +392,10 @@
         \qrcode{https://www.cobyqa.com}\\[1ex]
         \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
     \end{center}
+
+    \begin{block}{}
+        \texttt{\$ pip install cobyqa}
+    \end{block}
 \end{frame}
 
 
