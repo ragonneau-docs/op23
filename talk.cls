@@ -62,6 +62,25 @@
 \pgfplotsset{compat=1.18}
 \usetikzlibrary{positioning}
 \usepgfplotslibrary{}
+\pgfplotscreateplotcyclelist{profiles}{
+    thick,mark=none,VeniceBlue,solid\\
+    thick,mark=none,DarkCaramel,dashed\\
+    thick,mark=none,FernGreen,dotted\\
+    thick,mark=none,Mahogany,dashdotted\\
+}
+\pgfplotsset{
+    every axis/.append style={
+        label style={font=\footnotesize},
+        legend cell align=left,
+        legend style={
+            rounded corners,
+            thick,
+            draw=black!15,
+            font=\scriptsize,
+        },
+        tick label style={font=\footnotesize},
+    },
+}
 
 % Patch `Overfull \vbox (... too high)' in title page
 \def\titlepage{\usebeamertemplate{title page}}

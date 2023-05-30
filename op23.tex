@@ -6,6 +6,24 @@
 % Bibliography
 \addbibresource{bib/refs.bib}
 
+% Performance profiles
+\usepackage{xstring}
+\newcommand{\drawprofiles}[3]{%
+    \def\selectsolvers{#1}%
+    \def\selectcsv{figures/#2}%
+    \def\selectprofile{#3}%
+    \def\selectxlabel{$\log_2(\text{Perf.\ ratio})$}%
+    \def\selectylabel{Perf.\ profiles ($\tau = 10^{-#3}$)}%
+    \input{figures/profiles.tex}%
+}
+
+% Quoting support
+\usepackage[
+    begintext=\openautoquote,
+    endtext=\closeautoquote,
+    vskip=\topsep,
+]{quoting}
+
 % Macros dedicated to this presentation
 \newcommand*{\ceq}{h}
 \newcommand*{\ceqm}[1][]{\hat{\ceq}\ifblank{#1}{}{_{#1}}}
@@ -71,36 +89,6 @@
 \begin{frame}{Table of contents}
     \tableofcontents[hideallsubsections]
 \end{frame}
-
-% \begin{frame}{The method}
-%     \begin{block}{How does it work?}
-%         \begin{itemize}
-%             \item COBYQA is a derivative-free trust-region \alert{SQP} method.
-%             \item It builds \alert{models} of $\obj$, $\cub$, and $\ceq$ by underdetermined interpolation.
-%             \item Every point visited by COBYQA satisfied the \alert{bound} constraints.
-%         \end{itemize}
-%     \end{block}
-
-%     \medskip
-
-%     We implemented COBYQA in Python and made it \alert{publicly available}.
-
-%     \begin{center}
-%         \begin{center}
-%             \qrcode{https://www.cobyqa.com}\\[1ex]
-%             \href{https://www.cobyqa.com}{www.cobyqa.com}
-%         \end{center}
-%     \end{center}
-% \end{frame}
-
-% \begin{frame}{The focus of this talk}
-%     \begin{block}{}
-%         \begin{itemize}
-%             \item We provide a new \alert{interpretation} of SQP.
-%             \item We study some connections with \alert{manifold optimization}.
-%         \end{itemize}
-%     \end{block}
-% \end{frame}
 
 \section{General framework of COBYQA}
 
@@ -270,9 +258,130 @@
 
 \section{Implementation and experiments}
 
+\begin{frame}{The Python implementation of COBYQA}
+    \begin{block}{From \cite{Powell_2006}}
+        \begin{quoting}
+            \small%
+            The development of NEWUOA has taken nearly \alert{three years}.
+            The work was very \alert{frustrating} [\dots]
+        \end{quoting}
+        The development of COBYQA was not easier.
+    \end{block}
+
+    \smallskip
+
+    We implemented COBYQA in \alert{Python} and made it publicly available.
+
+    \smallskip
+
+    \begin{center}
+        \qrcode{https://www.cobyqa.com}\\[1ex]
+        \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Comparing COBYQA with existing DFO solvers}
+    \begin{itemize}
+        \item We assess the quality of points based on the merit function
+        \begin{equation*}
+            \varphi(\iter) =
+            \begin{cases}
+                \obj(\iter)                           & \text{if~$v_{\infty}(x) \le 10^{-10}$,}\\
+                \infty                                & \text{if~$v_{\infty}(x) \ge 10^{-5}$,}\\
+                \obj(\iter) + 10^5 v_{\infty}(\iter)  & \text{otherwise,}
+            \end{cases}
+        \end{equation*}
+        where~$v_{\infty}$ denotes the~$\ell_{\infty}$-constraint violation.
+        \item The problems are from the \alert{CUTEst} set.
+        \item The problems are of \alert{dimension} at most \num{50} (this is \alert{not} small).
+        \item Problems with \alert{inviolable} bounds replace $\obj$ with
+        \begin{equation*}
+            \tilde{\obj}(x) =
+            \begin{cases}
+                \obj(x) & \text{if~$\xl \le x \le \xu$,}\\
+                \infty  & \text{otherwise.}
+            \end{cases}
+        \end{equation*}
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Performance of the SQP approach}
+    We compare two strategies for evaluating the Lagrange multipliers
+    \begin{itemize}
+        \item on \alert{nonlinearly constrained} problems,
+        \item comparing the default and the \alert{erroneous} ($\lmub[k] = 0$ and $\lmeq[k] = 0$) ones.
+    \end{itemize}
+
+    \smallskip
+
+    \begin{center}
+        \drawprofiles{{"Default","Erroneous"}}{plain-1-50-perf-cobyqa-wrong-hessian-qo.csv}{4}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Performance on linearly constrained problems}
+    We compare COBYQA, LINCOA, and COBYLA
+    \begin{itemize}[<+->]
+        \item on \alert{linearly constrained} problems,
+        \item with \alert{inviolable} bounds.
+    \end{itemize}
+
+    \smallskip
+
+    \begin{center}
+        \only<1>{\drawprofiles{{"COBYQA","LINCOA","COBYLA"}}{plain-1-50-perf-cobyla-cobyqa-lincoa-nl.csv}{4}}%
+        \only<2>{\drawprofiles{{"COBYQA","LINCOA","COBYLA"}}{plain-1-50-perf-cobyla-cobyqa-lincoa-nl-bounds.csv}{4}}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Performance on nonlinearly constrained problems}
+    We compare COBYQA and COBYLA
+    \begin{itemize}[<+->]
+        \item on \alert{nonlinearly constrained} problems,
+        \item with \alert{inviolable} bounds.
+    \end{itemize}
+
+    \smallskip
+
+    \begin{center}
+        \only<1>{\drawprofiles{{"COBYQA","COBYLA"}}{plain-1-50-perf-cobyla-cobyqa-qo.csv}{4}}%
+        \only<2>{\drawprofiles{{"COBYQA","COBYLA"}}{plain-1-50-perf-cobyla-cobyqa-qo-bounds.csv}{4}}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Comparison with COBYLA}
+    We compare COBYQA and COBYLA on \alert{all} problems.
+
+    \bigskip
+
+    \begin{center}
+        \drawprofiles{{"COBYQA","COBYLA"}}{plain-1-50-perf-cobyla-cobyqa-ubnlqo.csv}{4}
+    \end{center}
+\end{frame}
+
 \section{Conclusion}
 
 \begin{frame}{Conclusion}
+    We presented our new method COBYQA.
+    \begin{itemize}
+        \item It already received \alert{positive} feedback from practitioners.
+        \item It will soon be included in
+        \begin{itemize}
+            \item PDFO as a successor for COBYLA, and
+            \item GEMSEO, an \alert{industrial} software package for MDO.
+        \end{itemize}
+    \end{itemize}
+
+    We stated a new interpretation of the SQP subproblem.
+    \begin{itemize}
+        \item Does it provide new insights into \alert{manifold optimization}?
+        \item Can these insights help the theoretical analysis of COBYQA?
+    \end{itemize}
+
+    \begin{center}
+        \qrcode{https://www.cobyqa.com}\\[1ex]
+        \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
+    \end{center}
 \end{frame}
 
 
