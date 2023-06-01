@@ -33,6 +33,7 @@
 \newcommand*{\cubm}[1][]{\hat{\cub}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\iter}[1][]{x\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lag}{\mathcal{L}}
+\newcommand*{\lagalt}{\widetilde{\mathcal{L}}}
 \newcommand*{\lagm}[1][]{\widehat{\lag}\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lmeq}[1][]{\mu\ifblank{#1}{}{_{#1}}}
 \newcommand*{\lmub}[1][]{\lambda\ifblank{#1}{}{_{#1}}}
@@ -84,10 +85,10 @@
         \begin{itemize}
             \item COBYQA aims at being a \alert{successor} to \alert{COBYLA} \parencite{Powell_1994}.
             \item We \alert{implement} COBYQA into a Python solver.
-            \item The bound constraints are assumed \alert{inviolable}, as
+            \item The bound constraints are assumed \alert{inviolable}.
             \begin{itemize}
-                \item they often represent \alert{inalienable} restrictions, and
-                \item $\obj(\iter)$, $\cub(\iter)$, and $\ceq(\iter)$ may not be defined if $\xl \not\le \iter$ or $\iter \not\le \xu$.
+                \item They often represent \alert{inalienable} restrictions.
+                \item The functions $\obj$, $\cub$, and $\ceq$ may not be defined outside the bounds.
             \end{itemize}
         \end{itemize}
     \end{block}
@@ -103,7 +104,7 @@
 
     COBYQA iteratively solves the trust-region SQP subproblem
     \begin{align*}
-        \min_{\step \in \R^n}   & \quad \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k]) + \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter} ^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
+        \min_{\step \in \R^n}   & \quad \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k]) + \nabla \only<1>{\obj}\only<2>{\alert{\objm[k]}}(\iter[k])^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter}^2 \only<1>{\lag}\only<2>{\alert{\lagm[k]}}(\iter[k], \lmub[k], \lmeq[k]) \step\\
         \textrm{s.t.}           & \quad \begin{cases}
             \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) + \nabla \only<1>{\cub}\only<2>{\alert{\cubm[k]}}(\iter[k]) \step \le 0\text{,}\\
             \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) + \nabla \only<1>{\ceq}\only<2>{\alert{\ceqm[k]}}(\iter[k]) \step = 0\text{,}\\
@@ -121,7 +122,7 @@
         \begin{itemize}
             \item We only require an approximate solution $\step[k]$.
             \item The solution must satisfy $\xl \le \iter[k] + \step[k] \le \xu$.
-            \item It is \alert{wrong} to replace $\nabla_{\iter, \iter} ^2 \lagm[k](\iter[k], \lmub[k], \lmeq[k])$ with $\nabla^2 \objm[k](\iter[k])$.
+            \item It is \alert{wrong} to replace $\nabla_{\iter, \iter}^2 \alert{\lagm[k]}(\iter[k], \lmub[k], \lmeq[k])$ with $\nabla^2 \alert{\objm[k]}(\iter[k])$.
         \end{itemize}
     \end{block}
 \end{frame}
@@ -140,6 +141,7 @@
         for some $\xpt[k] \subseteq \R^n$, with $\objm[-1] \equiv 0$ (similar for $\cubm[k]$ and $\ceqm[k]$).
     \end{exampleblock}
 
+    \vspace{-0.5em}
     The interpolation set $\xpt[k]$ is \alert{recycled} at each iteration.
     \begin{itemize}
         \item We set $\xpt[k + 1] = \big(\xpt[k] \cup \set{\iter[k] + \step[k]}\big) \setminus \set{\bar{y}}$ for some bad point $\bar{y} \in \xpt[k]$.
@@ -192,18 +194,40 @@
 
 \section{A new interpretation of SQP}
 
-\begin{frame}{General settings}
-    \begin{block}{}
-        \faIcon{exclamation-triangle} This part is \alert{not} DFO and focuses on SQP
-    \end{block}
+\begin{frame}[standout]
+    \faIcon{exclamation-triangle} This part is \alert{NOT} about DFO but SQP.
+\end{frame}
 
-    For simplicity, we consider the \alert{smooth} problem
+\begin{frame}{General settings}
+
+    For simplicity, we consider the \alert{smooth} equality-constrained problem
     \begin{equation*}
         \min_{\iter \in \R^n} \quad \obj(\iter) \quad \textrm{s.t.} \quad \ceq(\iter) = 0\text{,}
     \end{equation*}
-    and we denote by $\lag$ its Lagrangian, given by
+    and we denote by $\lag$ its \alert{Lagrangian}, given by
     \begin{equation*}
         \lag(\iter, \lmeq) = \obj(\iter) + \lmeq^{\T} \ceq(\iter)\text{.}
+    \end{equation*}
+
+    \begin{block}{Classical interpretations of SQP}
+        \begin{itemize}
+            \item It is \alert{Newton}'s method applied to the KKT system.
+            \item It minimizes the second-order Taylor expansion of
+            \begin{equation*}
+                \lagalt(\iter, \lmeq) = \obj(\iter) + \mu^{\T} \big[\ceq(\iter) - \ceq(\iter[k]) - \nabla \ceq(\iter[k]) (\iter - \iter[k])\big]\text{.}
+            \end{equation*}
+        \end{itemize}
+        For details, see \textcite[\S\ 4.1.3]{Ragonneau_2022}.
+    \end{block}
+\end{frame}
+
+\begin{frame}{The new interpretation}
+    The SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
+    \begin{equation*}
+        \begin{aligned}
+            \min_{\step \in \R^n}   & \quad \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq}) \step\\
+            \textrm{s.t.}           & \quad \ceq(\bar{\iter}) + \nabla \ceq(\bar{\iter}) \step = 0\text{.}
+        \end{aligned}
     \end{equation*}
 
     \begin{block}{A curve on the level surface of the constraints}
@@ -213,18 +237,22 @@
         \end{equation*}
         Note that $\bar{\iter}$ can be \alert{infeasible}, i.e., $\ceq(\bar{\iter}) \neq 0$.
     \end{block}
+
+    \medskip
+
+    Remark that $\nabla \ceq(\bar{\iter}) \xi'(0) = 0$, i.e., $\xi'(0) \in \ker \nabla \ceq(\bar{\iter})$.
 \end{frame}
 
-\begin{frame}{The new interpretation}
-    Recall that the objective function of the SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
+\begin{frame}{The new interpretation (cont'd)}
+    The objective function of the SQP subproblem at $(\bar{\iter}, \bar{\lmeq})$ is
     \begin{equation*}
-        q(\step) = \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step\text{.}
+        q(\step) = \obj(\bar{\iter}) + \nabla \obj(\bar{\iter})^{\T} \step + \frac{1}{2} \step^{\T} \alert{\only<1,3->{\nabla_{\iter, \iter}^2 \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla^2 \obj(\bar{\iter})}} \step\text{.}
     \end{equation*}
 
     \begin{alertblock}{Main result (Ragonneau and Zhang, 2022)}
         If $\obj$, $\ceq$, and $\xi$ have locally Lipschitz second-order derivatives, then
         \begin{equation*}
-            \abs[\big]{\obj\big(\xi(t)\big) - q\big(\xi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\xi''(0)^{\T} \textcolor{FernGreen}{\only<1,3->{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
+            \abs[\big]{\obj\big(\xi(t)\big) - q\big(\xi'(0)t\big)} \le \bigg(\nu t + \frac{1}{2} \abs[\big]{\xi''(0)^{\T} \alert{\only<1,3->{\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq})}\only<2>{\nabla \obj(\bar{\iter})}}}\bigg) t^2
         \end{equation*}
         for some $\nu \ge 0$, $\epsilon > 0$, and all $t \in (-\epsilon, \epsilon)$.
     \end{alertblock}
@@ -232,13 +260,14 @@
     \smallskip
 
     \begin{itemize}
-        \item<3-> Note that if $(\bar{\iter}, \bar{\lmeq})$ is \alert{almost} a KKT pair, then $\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq}) \approx 0$.
-        \item<4> What does the line $\set{\xi'(0)t}_{t \in \R}$ represent?
+        \item<3-> Note that $\nabla_{\iter} \lag(\bar{\iter}, \bar{\lmeq}) \approx 0$ if $(\bar{\iter}, \bar{\lmeq})$ is \alert{almost} a KKT pair.
+        \item<4> What does this theorem mean geometrically?
+        % \item<4> What does the line $\set{\xi'(0)t : t \in \R}$ represent?
     \end{itemize}
 
 \end{frame}
 
-\begin{frame}{The new interpretation (cont'd)}
+\begin{frame}{A graphical representation}
     \begin{center}
         \begin{tikzpicture}[rotate=301]
             \draw[thick,VeniceBlue] plot[smooth,tension=1] coordinates {(0,2) (2,3) (3,6)};
@@ -261,10 +290,7 @@
     \begin{itemize}
         \item The \textcolor{FernGreen}{green} line represents the feasible set of the SQP subproblem.
         \item If $\ceq(\bar{\iter}) = 0$, the \textcolor{FernGreen}{green} and \textcolor{DarkCaramel}{yellow} lines overlap.
-        \item The \textcolor{FernGreen}{green} line is shifted towards feasibility, because
-        \begin{equation*}
-            \norm[\big]{\ceq(\bar{\iter} + \step)} = \mathcal{O}\big(\norm[\big]{\ceq(\bar{\iter})}^2\big)\text{.}
-        \end{equation*}
+        \item The \textcolor{FernGreen}{green} line is a shifted copy of the \textcolor{DarkCaramel}{yellow} one towards feasibility.
     \end{itemize}
 \end{frame}
 
@@ -395,21 +421,26 @@
         \item Can these insights help the theoretical analysis of COBYQA?
     \end{itemize}
 
-    \medskip
-
     \begin{columns}
-        \begin{column}{0.4\textwidth}
+        \begin{column}{0.5\textwidth}
             \begin{center}
                 \qrcode{https://www.cobyqa.com}\\[1ex]
                 \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
             \end{center}
         \end{column}
-        \begin{column}{0.6\textwidth}
-            \begin{block}{Installation via PyPI}
-                \texttt{\$ pip install cobyqa}
-            \end{block}
+        \begin{column}{0.5\textwidth}
+            \begin{center}
+                \qrcode{http://tomragonneau.com/documents/thesis.pdf}\\[1ex]
+                \href{http://tomragonneau.com/documents/thesis.pdf}{My thesis}
+            \end{center}
         \end{column}
     \end{columns}
+
+    \medskip
+
+    \begin{block}{}
+        \texttt{\$ pip install cobyqa}
+    \end{block}
 \end{frame}
 
 

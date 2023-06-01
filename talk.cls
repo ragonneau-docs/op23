@@ -230,7 +230,7 @@
 % QR codes
 \ifdraft{\PassOptionsToPackage{draft}{qrcode}}{}
 \RequirePackage[nolinks]{qrcode}
-\qrset{level=Q,version=3}  % Up to 47 alphanumeric characters
+\qrset{level=Q,version=4}
 % Make QR codes clickable (the document is compiled with XeLaTeX)
 \setlength{\XeTeXLinkMargin}{1pt}
 \let\old@qrcode\qrcode\relax
