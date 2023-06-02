@@ -4,6 +4,7 @@
 ]{talk}
 \usepackage{array}
 \usepackage{fontawesome5}
+\usepackage{makecell}
 
 % Bibliography
 \addbibresource{bib/refs.bib}
@@ -181,15 +182,54 @@
         \textcolor{FernGreen}{We adapt the truncated conjugate gradient method.}
         \item What are the approximate Lagrange multipliers $\lmub[k]$ and $\lmeq[k]$?\\
         \textcolor{FernGreen}{We choose the least-squares Lagrange multipliers.}
-        \item How to define a trust-region ratio? Using what merit function?\\
+        \item How to define a trust-region ratio? Using what \alert{merit} function?\\
         \textcolor{FernGreen}{COBYQA uses the $\ell_2$-merit function.}
-        \item What if the set $\xpt[k]$ is (almost) nonpoised?\\
-        \textcolor{FernGreen}{We use a geometry-improving mechanism.}
+        \item How to update the \alert{penalty} parameter?\\
+        \textcolor{FernGreen}{The update incorporates}
+        \begin{itemize}
+            \item \textcolor{FernGreen}{a theoretical value for the exactness of the merit function, and}
+            \item \textcolor{FernGreen}{a strategy used by Powell in COBYLA.}
+        \end{itemize}
     \end{itemize}
 
     \medskip
 
     These questions (and more) are addressed in \textcite{Ragonneau_2022}.
+\end{frame}
+
+\begin{frame}{A crucial difficulty in the implementation}
+    \begin{itemize}
+        \item What if the interpolation set $\xpt[k]$ is almost nonpoised?\\
+        \textcolor{FernGreen}{A well-known approach: using a geometry-improving mechanism.\footnote{See \textcite{Conn_Scheinberg_Vicente_2008a,Conn_Scheinberg_Vicente_2008b,Fasano_Morales_Nocedal_2009}.}}
+    \end{itemize}
+
+    \medskip
+
+    \begin{block}{This is a central difficulty in the implementation of DFO methods}
+        \begin{center}
+            \begin{tikzpicture}
+                \draw[thick] (0,0) rectangle (3,1.5);
+                \draw[thick] (6,0) rectangle (9,1.5);
+                \draw[thick,Mahogany] (3,1) -- (4.4,1);
+                \draw[-stealth,thick,Mahogany] (4.6,1) -- (6,1);
+                \draw[thick,Mahogany] (4.3,0.9) -- (4.5,1.1);
+                \draw[thick,Mahogany] (4.5,0.9) -- (4.7,1.1);
+                \draw[thick,Mahogany] (6,0.5) -- (4.6,0.5);
+                \draw[-stealth,thick,Mahogany] (4.4,0.5) -- (3,0.5);
+                \draw[thick,Mahogany] (4.3,0.4) -- (4.5,0.6);
+                \draw[thick,Mahogany] (4.5,0.4) -- (4.7,0.6);
+                \node at (1.5,0.75) {\makecell{Modeling\\ process}};
+                \node at (7.5,0.75) {\makecell{Optimization\\ process}};
+                \node[above,text=Mahogany] at (4.5,1.1) {\small\emph{Often inhibit}};
+                \node[below,text=Mahogany] at (4.5,0.4) {\small\emph{each other}};
+            \end{tikzpicture}
+        \end{center}
+
+        \begin{itemize}
+            \item The iterates $\set{x^k}$ likely lie on a particular path.
+            \item The modeling process does \alert{not} ponder the optimization problem.
+        \end{itemize}
+    \end{block}
 \end{frame}
 
 \section{A new interpretation of SQP}
@@ -426,7 +466,7 @@
         \begin{column}{0.5\textwidth}
             \begin{center}
                 \qrcode{https://www.cobyqa.com}\\[1ex]
-                \href{https://www.cobyqa.com}{\texttt{www.cobyqa.com}}
+                \href{https://www.cobyqa.com}{COBYQA}
             \end{center}
         \end{column}
         \begin{column}{0.5\textwidth}
