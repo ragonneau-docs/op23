@@ -49,7 +49,7 @@
 % Headings
 \title{COBYQA}
 \subtitle{A derivative-free trust-region SQP method for nonlinearly constrained optimization}
-\date{OP23 (June 3, 2023)}
+\date{SIAM Conference on Optimization, Seattle, WA, 2023}
 \author{\href{https://www.tomragonneau.com}{\textbf{Tom M. Ragonneau}} \and \href{https://www.zhangzk.net}{Zaikun Zhang}}
 \institute{
     Department of Applied Mathematics\\
@@ -212,12 +212,13 @@
     \begin{block}{Classical interpretations of SQP}
         \begin{itemize}
             \item It is \alert{Newton}'s method applied to the KKT system.
-            \item It minimizes the second-order Taylor expansion of
+            \item It iteratively minimizes the second-order Taylor expansion of
             \begin{equation*}
                 \lagalt(\iter, \lmeq) = \obj(\iter) + \mu^{\T} \big[\ceq(\iter) - \ceq(\iter[k]) - \nabla \ceq(\iter[k]) (\iter - \iter[k])\big]\text{.}
             \end{equation*}
+            \item It is equivalent to a convex-composite algorithm for NLP.
         \end{itemize}
-        For details, see \textcite[\S\ 4.1.3]{Ragonneau_2022}.
+        % For details, see, e.g., \textcite[\S\ 4.1.3]{Ragonneau_2022}.
     \end{block}
 \end{frame}
 
