@@ -337,7 +337,7 @@
 
 \section{Implementation and experiments}
 
-\begin{frame}{The Python implementation of COBYQA}
+\begin{frame}[fragile]{The Python implementation of COBYQA}
     \begin{block}{From \textcite{Powell_2006}}
         \begin{quoting}
             \small%
@@ -366,6 +366,30 @@
             \end{block}
         \end{column}
     \end{columns}
+\end{frame}
+
+\begin{frame}{Solving SOLAR6 \parencite{Garneau_2015}}
+    The problem has
+    \begin{itemize}
+        \item 5 continuous variables,
+        \item \alert{inviolable} bound constraints on each variable,
+        \item 6 nonlinear inequality constraints, and
+        \item an \alert{infeasible} initial guess, with $\norm[\big]{\max \set{0, \cub(\iter[0])}}_{\infty} \approx \num{44.9965}$.
+    \end{itemize}
+
+    \medskip
+
+    \begin{block}{Output of COBYQA (with default options)}
+        \begin{itemize}
+            \item Number of function evaluations: \num{192}.
+            \item Final objective function value: $\obj(\iter[\num{192}]) = \num{54842275.4721}$.
+            \item Final constraint violation: $\norm[\big]{\max \set{0, \cub(\iter[\num{192}])}}_{\infty} = 0.0$.
+        \end{itemize}
+    \end{block}
+
+    \medskip
+
+    The best objective function value \alert{so far} is $\obj(\iter[\ast]) = \num{43955452.8547}$.
 \end{frame}
 
 \begin{frame}{Comparing COBYQA with existing DFO solvers}
@@ -449,7 +473,7 @@
 
 \section{Conclusion}
 
-\begin{frame}{Conclusion}
+\begin{frame}[fragile]{Conclusion}
     We presented our new method COBYQA.
     \begin{itemize}
         \item It already received \alert{positive} feedback from practitioners.
