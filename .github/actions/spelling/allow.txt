@@ -79,6 +79,7 @@ licensetrue
 licq
 lincoa
 lvert
+makecell
 Mangasarian
 mathalpha
 mathbb
@@ -93,6 +94,7 @@ metroset
 mfcq
 mkern
 NEWUOA
+Nocedal
 nolicense
 nolinks
 NONINFRINGEMENT
